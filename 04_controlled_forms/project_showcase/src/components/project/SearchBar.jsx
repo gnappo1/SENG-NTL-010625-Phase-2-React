@@ -1,9 +1,5 @@
-const SearchBar = ({ setSearchQuery }) => {
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  return <input type="text" placeholder="Search..." onChange={handleSearch} />;
+const SearchBar = ({ handleSearch, searchQuery }) => {
+  return <input type="text" placeholder="Search..." value={searchQuery} onChange={handleSearch} />;
 };
 
 export default SearchBar;

@@ -1,13 +1,4 @@
-const PhaseFilter = ({ phaseSelected, setPhaseSelected }) => {
-  const handlePhaseSelection = (e) => {
-    if (e.target.textContent === "All") {
-      setPhaseSelected("");
-    } else {
-      const phase = e.target.textContent.replace("Phase ", "");
-      setPhaseSelected(Number(phase));
-    }
-  };
-
+const PhaseFilter = ({ phaseSelected, handlePhaseSelection }) => {
   return (
     <div className="filter" onClick={handlePhaseSelection}>
       <button className={phaseSelected === "" ? "active" : ""}>All</button>
