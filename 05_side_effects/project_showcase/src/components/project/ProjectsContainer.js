@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProjectForm from './ProjectForm';
 import ProjectList from './ProjectList';
 import PhaseFilter from './PhaseFilter';
@@ -10,16 +10,22 @@ const ProjectsContainer = () => {
     const [phaseSelected, setPhaseSelected] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
-    const handleClick = () => {
-        loadProjects();
-    };
-
-    const loadProjects = () => {
-        fetch("http://localhost:4000/projects")
-            .then((res) => res.json())
-            .then((projects) => setProjects(prevProjects => [...prevProjects, ...projects]))
-            .catch(error => toast.error(error.message));
-    }
+    
+    useEffect(() => {
+        (() => {
+            console.log("I was rendered")
+            fetch("http://localhost:4000/projects")
+                .then((res) => res.json())
+                .then((projects) => setProjects(prevProjects => [...prevProjects, ...projects]))
+                .catch(error => toast.error(error.message));
+        })()
+        // loadProjects()
+    }, [])
+    
+    // const handleClick = () => {
+        //     loadProjects();
+        // };
+        
 
     const handleAddProject = (projectToAdd) => {
         setProjects(prevProjectsList => [...prevProjectsList, projectToAdd])
@@ -43,7 +49,7 @@ const ProjectsContainer = () => {
             <ProjectForm handleAddProject={handleAddProject}/>
             <h2>Projects</h2>
             <br />
-            <button onClick={handleClick}>Load Projects</button>
+            {/* <button onClick={handleClick}>Load Projects</button> */}
             <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
             <PhaseFilter phaseSelected={phaseSelected} handlePhaseSelection={handlePhaseSelection} />
             <ProjectList projects={projects} phaseSelected={phaseSelected} searchQuery={searchQuery} />
