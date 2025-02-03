@@ -1,6 +1,6 @@
 import ProjectListItem from "./ProjectListItem";
 
-const ProjectList = ({ projects, phaseSelected, searchQuery }) => {
+const ProjectList = ({ projects, phaseSelected, searchQuery, handleDeleteProject }) => {
 
   const filteredProjects = projects.filter(project => {
     return phaseSelected === "" || project.phase === phaseSelected
@@ -14,6 +14,7 @@ const ProjectList = ({ projects, phaseSelected, searchQuery }) => {
     return searchResults.map(project => (
       <ProjectListItem
         key={project.id}
+        handleDeleteProject={handleDeleteProject}
         {...project}
       />
     ))
