@@ -1,7 +1,7 @@
 //! To control a form, you can create one state variable per form element to control
 //! Or better, why not creating ONE object with as many key/value pairs as the number of form elements to track
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { object, string, number } from 'yup';
 
@@ -21,22 +21,28 @@ const initialValues = { //! It will only be created ONCE
   image: "",
 }
 
-const ProjectForm = ({ handleAddProject }) => {
+const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditProject }) => {
 
   const [newProject, setNewProject] = useState(initialValues)
 
-  // const initialValues = { //! It will be re-created on EVERY rendering
-  //   name: "",
-  //   about: "",
-  //   phase: "",
-  //   link: "",
-  //   image: "",
-  // }
+  useEffect(() => {
+    if (editModeId) { //! it means if it's truthy
+      fetch(`http://localhost:4000/projects/${editModeId}`)
+        .then(resp => resp.json())
+        .then(project => setNewProject(project))
+        .catch(error => toast.error(error.message))
+    }
+  }, [editModeId])
 
   const handleChange = (e) => {
     setNewProject(prevNewProject => ({ ...prevNewProject, [e.target.name]: e.target.value }))
     // setNewProject(prevNewProject => ({ ...prevNewProject, [target.name]: target.value })) => {target}
     // setNewProject(prevNewProject => ({ ...prevNewProject, [name]: value })) => { target: { name, value } }
+  }
+
+  const handleCancelClick = () => {
+    handleEditMode(null)
+    setNewProject(initialValues)
   }
 
   const handleSubmit = (e) => {
@@ -45,32 +51,55 @@ const ProjectForm = ({ handleAddProject }) => {
     //! 2. DO NOT TRUST YOUR USERS EEEEEEEEVER!!!!!
     //! 2a. The data is already in object notation -> newProject
     projectSchema.validate(newProject)
-    .then(validatedNewProject => {
+    .then(validatedProject => {
 
-      //! How do we use the validated object now???
-      //! PESSIMISTIC APPROACH:
-      //! 1. communicate with the server, if working, an id will be generated
-      //! 2. In a correct submission, add the project to the state variable to cause a re-rendering and show it in the UI
-      //! 3. If promises are rejected or fulfilled but not ok, we flow the error to the catch and hot-toast will display it
-      fetch("http://localhost:4000/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(validatedNewProject)
-      })
-      .then(res => {
-        if (res.ok) {
-          return res.json()
-        }
-        throw new Error("The POST request failed")
-      })
-        .then(createdProject => {
-          handleAddProject(createdProject)
-          setNewProject(initialValues)
-          toast.success(`Successfully added project ${createdProject.name}`)
-      })
-        .catch(errorObj => toast.error(errorObj.message))
+      if (editModeId) {
+        fetch(`http://localhost:4000/projects/${editModeId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(validatedProject)
+        })
+          .then(res => {
+            if (res.ok) {
+              return res.json()
+            }
+            throw new Error("The PATCH request failed")
+          })
+          .then(updatedProject => {
+            handleEditProject(updatedProject)
+            handleCancelClick()
+            toast.success(`Successfully edited project ${updatedProject.name}`)
+          })
+          .catch(errorObj => toast.error(errorObj.message))
+        return
+      } else {
+          //! How do we use the validated object now???
+          //! PESSIMISTIC APPROACH:
+          //! 1. communicate with the server, if working, an id will be generated
+          //! 2. In a correct submission, add the project to the state variable to cause a re-rendering and show it in the UI
+          //! 3. If promises are rejected or fulfilled but not ok, we flow the error to the catch and hot-toast will display it
+          fetch("http://localhost:4000/projects", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(validatedProject)
+          })
+          .then(res => {
+            if (res.ok) {
+              return res.json()
+            }
+            throw new Error("The POST request failed")
+          })
+            .then(createdProject => {
+              handleAddProject(createdProject)
+              setNewProject(initialValues)
+              toast.success(`Successfully added project ${createdProject.name}`)
+          })
+            .catch(errorObj => toast.error(errorObj.message))
+      }
     })
     .catch(errorObj => toast.error(errorObj.message))
   }
@@ -78,7 +107,7 @@ const ProjectForm = ({ handleAddProject }) => {
   return (
     <section>
       <form className="form" autoComplete="off" onSubmit={handleSubmit}>
-        <h3>Add New Project</h3>
+        <h3>{editModeId ? "Update" : "Add New"} Project</h3>
 
         <label htmlFor="name">Name</label>
         <input type="text" id="name" name="name" value={newProject.name} onChange={handleChange}/>
@@ -102,8 +131,9 @@ const ProjectForm = ({ handleAddProject }) => {
         <label htmlFor="image">Screenshot</label>
         <input type="text" id="image" name="image" value={newProject.image} onChange={handleChange}/>
 
-        <button type="submit">Add Project</button>
+        <button type="submit">{editModeId ? "Update" : "Create"} Project</button>
       </form>
+      {editModeId && <button onClick={handleCancelClick}>Cancel</button>}
     </section>
   );
 };

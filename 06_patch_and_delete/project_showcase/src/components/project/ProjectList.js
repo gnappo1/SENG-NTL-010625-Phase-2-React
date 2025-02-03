@@ -1,6 +1,6 @@
 import ProjectListItem from "./ProjectListItem";
 
-const ProjectList = ({ projects, phaseSelected, searchQuery, handleDeleteProject }) => {
+const ProjectList = ({ projects, phaseSelected, searchQuery, handleDeleteProject, handleEditMode }) => {
 
   const filteredProjects = projects.filter(project => {
     return phaseSelected === "" || project.phase === phaseSelected
@@ -15,6 +15,7 @@ const ProjectList = ({ projects, phaseSelected, searchQuery, handleDeleteProject
       <ProjectListItem
         key={project.id}
         handleDeleteProject={handleDeleteProject}
+        handleEditMode={handleEditMode}
         {...project}
       />
     ))
