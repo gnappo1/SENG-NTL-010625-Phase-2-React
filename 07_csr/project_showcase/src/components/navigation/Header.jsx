@@ -1,3 +1,5 @@
+import { Link, NavLink } from "react-router-dom";
+
 const Header = (props) => {
   //! LOCAL STATE
   //! the hook returns an array with ALWAYS two elements
@@ -15,7 +17,11 @@ const Header = (props) => {
         <span className="logo">{"//"}</span>
         Project Showcase
       </h1>
-      <button onClick={props.toggleDarkMode}>{props.isDarkMode ? "Light Mode" : "Dark Mode"}</button>
+      <NavLink to="/" className={({isActive}) => isActive ? "active" : ""}>Home</NavLink>
+      <NavLink to="/projects/new" className={({isActive}) => isActive ? "active" : ""}>Create Project</NavLink>
+      <button onClick={props.toggleDarkMode}>
+        {props.isDarkMode ? "Light Mode" : "Dark Mode"}
+      </button>
     </header>
   );
 }

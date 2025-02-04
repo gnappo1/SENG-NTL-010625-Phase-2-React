@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { FaPencilAlt, FaTrash } from "react-icons/fa"
+import { useNavigate } from "react-router-dom";
 
 const ProjectListItem = ({ id, image, name, link, about, phase, handleDeleteProject, handleEditMode }) => {
   // const {image, name, link, about, phase} = project
   const [clapCount, setClapCount] = useState(0);
+  const navigate = useNavigate()
 
   const handleClap = () => setClapCount(current => current + 1);
+  
+  const handleEditClick = () => {
+    navigate(`/projects/${id}/edit`)
+  }
 
   return (
     <li className="card">
@@ -29,8 +35,16 @@ const ProjectListItem = ({ id, image, name, link, about, phase, handleDeleteProj
       <footer className="extra">
         <span className="badge blue">Phase {phase}</span>
         <div className="manage">
-          <button onClick={() => handleEditMode(id)}><FaPencilAlt /></button>
-          <button onClick={() => handleDeleteProject({ id, image, name, link, about, phase })}><FaTrash /></button>
+          <button onClick={handleEditClick}>
+            <FaPencilAlt />
+          </button>
+          <button
+            onClick={() =>
+              handleDeleteProject({ id, image, name, link, about, phase })
+            }
+          >
+            <FaTrash />
+          </button>
         </div>
       </footer>
     </li>

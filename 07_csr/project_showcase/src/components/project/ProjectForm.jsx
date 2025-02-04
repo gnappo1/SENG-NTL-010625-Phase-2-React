@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { object, string, number } from 'yup';
 
 let projectSchema = object({
@@ -21,18 +22,21 @@ const initialValues = { //! It will only be created ONCE
   image: "",
 }
 
-const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditProject }) => {
+const ProjectForm = () => {
 
   const [newProject, setNewProject] = useState(initialValues)
+  const { handleAddProject, handleEditProject } = useOutletContext()
+  const { projectId } = useParams();
+  const navigate = useNavigate()
 
   useEffect(() => {
-    if (editModeId) { //! it means if it's truthy
-      fetch(`http://localhost:4000/projects/${editModeId}`)
+    if (projectId) { //! it means if it's truthy
+      fetch(`http://localhost:4000/projects/${projectId}`)
         .then(resp => resp.json())
         .then(project => setNewProject(project))
         .catch(error => toast.error(error.message))
     }
-  }, [editModeId])
+  }, [projectId])
 
   const handleChange = (e) => {
     setNewProject(prevNewProject => ({ ...prevNewProject, [e.target.name]: e.target.value }))
@@ -41,7 +45,7 @@ const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditP
   }
 
   const handleCancelClick = () => {
-    handleEditMode(null)
+    // handleEditMode(null)
     setNewProject(initialValues)
   }
 
@@ -53,8 +57,8 @@ const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditP
     projectSchema.validate(newProject)
     .then(validatedProject => {
 
-      if (editModeId) {
-        fetch(`http://localhost:4000/projects/${editModeId}`, {
+      if (projectId) {
+        fetch(`http://localhost:4000/projects/${projectId}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json"
@@ -69,8 +73,9 @@ const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditP
           })
           .then(updatedProject => {
             handleEditProject(updatedProject)
-            handleCancelClick()
+            // handleCancelClick()
             toast.success(`Successfully edited project ${updatedProject.name}`)
+            navigate("/");
           })
           .catch(errorObj => toast.error(errorObj.message))
         return
@@ -95,7 +100,8 @@ const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditP
           })
             .then(createdProject => {
               handleAddProject(createdProject)
-              setNewProject(initialValues)
+              // setNewProject(initialValues)
+              navigate("/")
               toast.success(`Successfully added project ${createdProject.name}`)
           })
             .catch(errorObj => toast.error(errorObj.message))
@@ -107,7 +113,7 @@ const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditP
   return (
     <section>
       <form className="form" autoComplete="off" onSubmit={handleSubmit}>
-        <h3>{editModeId ? "Update" : "Add New"} Project</h3>
+        <h3>{projectId ? "Update" : "Add New"} Project</h3>
 
         <label htmlFor="name">Name</label>
         <input type="text" id="name" name="name" value={newProject.name} onChange={handleChange}/>
@@ -131,9 +137,9 @@ const ProjectForm = ({ handleAddProject, editModeId, handleEditMode, handleEditP
         <label htmlFor="image">Screenshot</label>
         <input type="text" id="image" name="image" value={newProject.image} onChange={handleChange}/>
 
-        <button type="submit">{editModeId ? "Update" : "Create"} Project</button>
+        <button type="submit">{projectId ? "Update" : "Create"} Project</button>
       </form>
-      {editModeId && <button onClick={handleCancelClick}>Cancel</button>}
+      {projectId && <button onClick={handleCancelClick}>Cancel</button>}
     </section>
   );
 };
