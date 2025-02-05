@@ -1,26 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import toast, { Toaster } from 'react-hot-toast';
 import Header from "./components/navigation/Header";
 import { Outlet } from "react-router-dom";
+import { ThemeContext } from "./context/ThemeProvider";
+import useFetch from "./custom_hooks/useFetch";
+const URL = "http://localhost:4000/projects";
+const config = {}
 
 const App = () => {
   //! State has been "lifted up" from Header into App
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [projects, setProjects] = useState([]);
+  // const [projects, setProjects] = useState([]);
+  const { data, error, loading } = useFetch(URL, config);
+  const [projects, setProjects] = useState(data);
+  const { isDarkMode } = useContext(ThemeContext);
 
   useEffect(() => {
-    (() => {
-      fetch("http://localhost:4000/projects")
-        .then((res) => res.json())
-        .then((projects) =>
-          setProjects((prevProjects) => [...prevProjects, ...projects])
-        )
-        .catch((error) => toast.error(error.message));
-    })();
-    // loadProjects()
-  }, []);
-
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode)
+    if (data) {
+      setProjects(data)
+    }
+  }, [data]);
 
   const handleAddProject = (projectToAdd) => {
     setProjects((prevProjectsList) => [...prevProjectsList, projectToAdd]);
@@ -34,7 +32,7 @@ const App = () => {
     );
   };
 
-  const handleDeleteProject = (projectToRemove) => {
+  const handleDeleteProject = useCallback((projectToRemove) => {
     (async () => {
       try {
         const resp = await fetch(
@@ -62,11 +60,18 @@ const App = () => {
     setProjects((prevProjects) =>
       prevProjects.filter((project) => project.id !== projectToRemove.id)
     );
-  };
+  }, []);
+
+  if (loading) {
+    return <h3>Loading...</h3>
+  }
+  if (error) {
+    return <h3>{error.message}</h3>
+  }
 
   return (
     <div className={isDarkMode ? "App" : "App light"}>
-      <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+      <Header />
       <Toaster />
       <Outlet
         context={{

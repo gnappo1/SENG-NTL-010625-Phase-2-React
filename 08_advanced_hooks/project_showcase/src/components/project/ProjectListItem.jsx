@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaPencilAlt, FaTrash } from "react-icons/fa"
 import { useNavigate } from "react-router-dom";
 
-const ProjectListItem = ({ id, image, name, link, about, phase, handleDeleteProject, handleEditMode }) => {
+const ProjectListItem = ({ id, image, name, link, about, phase, handleDeleteProject }) => {
   // const {image, name, link, about, phase} = project
   const [clapCount, setClapCount] = useState(0);
   const navigate = useNavigate()

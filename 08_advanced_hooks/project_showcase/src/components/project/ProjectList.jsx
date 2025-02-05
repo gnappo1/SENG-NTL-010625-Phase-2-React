@@ -1,29 +1,38 @@
+import { useMemo } from "react";
 import ProjectListItem from "./ProjectListItem";
 
-const ProjectList = ({ projects, phaseSelected, searchQuery, handleDeleteProject, handleEditMode }) => {
+const ProjectList = ({ projects, phaseSelected, searchQuery, handleDeleteProject }) => {
 
-  const filteredProjects = projects.filter(project => {
-    return phaseSelected === "" || project.phase === phaseSelected
-  })
+  const cachedCollection = useMemo(() => {
+    console.log("Inside useMemo")
+    const filteredProjects = projects && projects.filter((project) => {
+      return phaseSelected === "" || project.phase === phaseSelected;
+    });
 
-  const searchResults = filteredProjects.filter(project => {
-    return searchQuery === "" || project.name.toLowerCase().includes(searchQuery.toLowerCase())
-  })
+    const searchResults = filteredProjects && filteredProjects.filter((project) => {
+      return (
+        searchQuery === "" ||
+        project.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
 
-  const renderProjects = () => {
-    return searchResults.map(project => (
+    const mappedResults = searchResults && searchResults.map((project) => (
       <ProjectListItem
         key={project.id}
         handleDeleteProject={handleDeleteProject}
-        handleEditMode={handleEditMode}
         {...project}
       />
-    ))
-  }
+    ));
 
-  return (
-    <ul className="cards">{renderProjects(searchResults)}</ul>
-  );
+    return mappedResults;
+  }, [
+    projects,
+    phaseSelected,
+    searchQuery,
+    handleDeleteProject,
+  ]);
+
+  return <ul className="cards">{cachedCollection}</ul>;
 };
 
 export default ProjectList;
